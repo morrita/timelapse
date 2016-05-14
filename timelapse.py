@@ -13,11 +13,13 @@ import os
 logdir = '/var/log/timelapse'
 logfilename = 'timelapse.log'
 countfilename = 'countfile.txt'
+videofilename = 'timelapse.mp4'
 logfile = logdir + "/" + logfilename
 countfile = logdir + "/" + countfilename
+videoname = logdir + "/" + videofilename
 
-photo_width = 640
-photo_height = 480
+photo_width = 1920 
+photo_height = 1080
 pct_quality = 100
 
 def update_file(message,filename): # append filename with message
@@ -40,34 +42,45 @@ def representsInt(s):
 
 datestr = get_date()
 
-if os.path.isfile(countfile): 
-    with open(countfile, 'r') as f:
-        firstLine = f.readline()
+if len(sys.argv) == 2:
+   if 'process' in sys.argv[1].lower():
 
-    firstList = firstLine.split()
-    firstNum = firstList[0]
-
-    if representsInt(firstNum):
-        firstInt = int(firstNum)
-        update_file("Temp file %s  contains number  %s \n" % (countfile, str(firstInt)), logfile)
-        firstInt += 1
-
-        os.remove (countfile)
-        update_file(str(firstInt),countfile)
-
-        update_file("INFO: Updated countfile %s  with number  %s \n" % (countfile, str(firstInt)), logfile)
-
+       update_file("INFO: started to create video %s at %s \n" % (videoname,datestr), logfile)
+       fname = logdir + "/%05d.jpeg"
+       subprocess.call("avconv -i %s -r 25 %s" % (fname,videoname),shell=True) 
+       datestr = get_date()
+       update_file("INFO: complete creating video %s at %s \n" % (videoname,datestr), logfile)
 
 else:
 
-    firstInt = 1
-    update_file("Creating countfile %s at %s \n" % (countfile, datestr), logfile)
-    update_file(str(firstInt),countfile)
+    if os.path.isfile(countfile): 
+        with open(countfile, 'r') as f:
+            firstLine = f.readline()
 
-datestr = get_date()
-photofilename = str(firstInt).zfill(5) + ".jpeg"
-photoname = logdir + "/" + photofilename
+        firstList = firstLine.split()
+        firstNum = firstList[0]
 
-subprocess.call("raspistill -mm matrix -w %d -h %d -e jpg -q %d -o %s" % (photo_width, photo_height, pct_quality, photoname), shell=True)
+        if representsInt(firstNum):
+            firstInt = int(firstNum)
+            update_file("Temp file %s  contains number  %s \n" % (countfile, str(firstInt)), logfile)
+            firstInt += 1
 
-update_file("INFO: photograph %s created at %s \n" % (photoname,datestr), logfile)
+            os.remove (countfile)
+            update_file(str(firstInt),countfile)
+
+            update_file("INFO: Updated countfile %s  with number  %s \n" % (countfile, str(firstInt)), logfile)
+
+
+    else:
+
+        firstInt = 1
+        update_file("Creating countfile %s at %s \n" % (countfile, datestr), logfile)
+        update_file(str(firstInt),countfile)
+
+    datestr = get_date()
+    photofilename = str(firstInt).zfill(5) + ".jpeg"
+    photoname = logdir + "/" + photofilename
+
+    subprocess.call("raspistill -mm matrix -w %d -h %d -e jpg -q %d -o %s" % (photo_width, photo_height, pct_quality, photoname), shell=True)
+
+    update_file("INFO: photograph %s created at %s \n" % (photoname,datestr), logfile)
