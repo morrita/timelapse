@@ -10,7 +10,7 @@
 # the following arguments are supported:
 # timelapse.py process    --this merges all of the jpeg picture files in logdir and converts to mpeg
 # timelapse.py clear      --this will remove all of the contents of the logdir directory
-# timelapse.py shutdown   --this will 
+# timelapse.py shutdown   --this will initiate a system shutdown 
 #
 #
 
